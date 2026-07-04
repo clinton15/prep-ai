@@ -10,6 +10,7 @@
 
 const express = require('express');
 const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 
 dotenv.config();
 
@@ -18,13 +19,18 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Hello from Prep AI'});
+    res.json({ message: 'Hello from Prep AI' });
 });
 
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+    await connectDB();
+    const server = app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
 
-server.on('error', (error) => {
-    console.error('Error:', error);
-});
+    server.on('error', (error) => {
+        console.error('Error:', error);
+    });
+}
+
+startServer();
