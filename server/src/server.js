@@ -12,6 +12,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
+const interviewProcessRoutes = require('./routes/interviewProcess.routes');
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/processes', interviewProcessRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Hello from Prep AI' });
