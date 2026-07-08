@@ -13,6 +13,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const interviewProcessRoutes = require('./routes/interviewProcess.routes');
+const interviewRoundRoutes = require('./routes/interviewRound.routes');
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/processes', interviewProcessRoutes);
+app.use('/api/rounds', interviewRoundRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Hello from Prep AI' });

@@ -40,6 +40,7 @@ const interviewProcessSchema = new mongoose.Schema({
     jobUrl: {
         type: String,
         trim: true,
+        match: /^https?:\/\/.+/,
     },
 
     notes: {

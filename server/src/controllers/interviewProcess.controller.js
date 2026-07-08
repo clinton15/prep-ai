@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const InterviewProcess = require('../models/interviewProcess');
 
 const createInterviewProcess = async (req, res) => {
