@@ -118,7 +118,113 @@ async function generateQuestionsFromAI(prompt) {
     }
 }
 
+function buildEvaluationPrompt({
+    question,
+    expectedAnswer,
+    userAnswer,
+}) {
+    return `
+You are a senior software engineering interviewer evaluating a candidate's answer.
+
+Evaluate the candidate's response based on correctness, completeness, technical depth, and communication.
+
+Interview Question:
+
+${question}
+
+
+Expected Ideal Answer:
+
+${expectedAnswer}
+
+
+Candidate Answer:
+
+${userAnswer}
+
+
+Evaluation Instructions:
+
+- Compare the candidate answer with the expected answer.
+- Evaluate technical accuracy.
+- Consider the candidate's experience level.
+- Give constructive feedback.
+- Mention what was done well.
+- Mention specific improvements.
+
+Return ONLY valid JSON.
+
+Do not include markdown.
+Do not include explanations outside JSON.
+
+The response MUST follow this exact format:
+
+{
+    "score": 8,
+    "feedback": "Detailed feedback about the answer",
+    "strengths": [
+        "Strength 1",
+        "Strength 2"
+    ],
+    "improvements": [
+        "Improvement 1",
+        "Improvement 2"
+    ]
+}
+
+
+Rules:
+
+- score must be a number between 0 and 10.
+- strengths must always be an array.
+- improvements must always be an array.
+- feedback must be a string.
+
+Return ONLY JSON.
+`;
+}
+
+async function evaluateAnswerFromAI(prompt) {
+    try {
+
+        const response = await getAI().models.generateContent({
+            model: process.env.GEMINI_MODEL,
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+            },
+        });
+
+
+        const text = response.text;
+
+
+        if (!text) {
+            throw new Error(
+                'Empty response received from Gemini'
+            );
+        }
+
+
+        return JSON.parse(text);
+
+
+    } catch (error) {
+
+        console.error(
+            'Gemini Evaluation Error:',
+            error
+        );
+
+        throw new Error(
+            'Failed to evaluate answer from AI'
+        );
+    }
+}
+
 module.exports = {
     buildQuestionPrompt,
     generateQuestionsFromAI,
+    buildEvaluationPrompt,
+    evaluateAnswerFromAI,
 };

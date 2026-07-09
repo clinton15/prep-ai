@@ -16,6 +16,7 @@ const authRoutes = require('./routes/auth.routes');
 const interviewProcessRoutes = require('./routes/interviewProcess.routes');
 const interviewRoundRoutes = require('./routes/interviewRound.routes');
 const questionRoutes = require('./routes/interviewQuestion.routes');
+const answerRoutes = require('./routes/interviewAnswer.routes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/processes', interviewProcessRoutes);
 app.use('/api/rounds', interviewRoundRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/answers', answerRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'Hello from Prep AI' });
