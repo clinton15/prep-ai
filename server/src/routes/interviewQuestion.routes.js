@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { generateQuestions, getQuestions } = require('../controllers/interviewQuestion.controller');
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middleware/auth.middleware');
 
 router.use(authMiddleware);
 

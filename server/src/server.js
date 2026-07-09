@@ -8,15 +8,14 @@
 // 6. Start the server
 // 7. Handle server errors
 
+require('dotenv').config();
+
 const express = require('express');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const interviewProcessRoutes = require('./routes/interviewProcess.routes');
 const interviewRoundRoutes = require('./routes/interviewRound.routes');
-const questionRoutes = require('./routes/question.routes');
-
-dotenv.config();
+const questionRoutes = require('./routes/interviewQuestion.routes');
 
 const app = express();
 
