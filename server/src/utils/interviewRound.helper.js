@@ -1,6 +1,11 @@
 const InterviewRound = require('../models/interviewRound');
 const InterviewProcess = require('../models/interviewProcess');
+const ApiError = require('./ApiError');
 
+/*
+    Shared ownership check used by question/answer flows.
+    Throws ApiError so asyncHandler + error middleware return a clean JSON response.
+*/
 const getInterviewRoundWithOwnershipCheck = async (
     interviewRoundId,
     userId
@@ -9,9 +14,7 @@ const getInterviewRoundWithOwnershipCheck = async (
     const interviewRound = await InterviewRound.findById(interviewRoundId);
 
     if (!interviewRound) {
-        const error = new Error('Interview round not found');
-        error.statusCode = 404;
-        throw error;
+        throw new ApiError(404, 'Interview round not found');
     }
 
     // Find parent interview process
@@ -20,16 +23,12 @@ const getInterviewRoundWithOwnershipCheck = async (
     );
 
     if (!interviewProcess) {
-        const error = new Error('Interview process not found');
-        error.statusCode = 404;
-        throw error;
+        throw new ApiError(404, 'Interview process not found');
     }
 
     // Ensure the logged-in user owns this interview process
     if (interviewProcess.user.toString() !== userId.toString()) {
-        const error = new Error('Access denied');
-        error.statusCode = 403;
-        throw error;
+        throw new ApiError(403, 'Access denied');
     }
 
     return {
