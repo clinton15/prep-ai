@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const generateToken = require('../utils/generateToken');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
+const { getAuthCookieOptions } = require('../utils/authCookie');
 
 /*
     Controllers are wrapped with asyncHandler so thrown ApiErrors
@@ -30,11 +31,12 @@ const register = asyncHandler(async (req, res) => {
         password: hashedPassword,
     });
 
+    // Store JWT in an HTTP-only cookie (not in the response body)
     const token = generateToken(user._id);
+    res.cookie('token', token, getAuthCookieOptions());
 
     return res.status(201).json({
         message: 'User created successfully',
-        token,
         user: {
             _id: user._id,
             name: user.name,
@@ -67,11 +69,12 @@ const login = asyncHandler(async (req, res) => {
         throw new ApiError(401, 'Invalid credentials');
     }
 
+    // Store JWT in an HTTP-only cookie (not in the response body)
     const token = generateToken(user._id);
+    res.cookie('token', token, getAuthCookieOptions());
 
     return res.status(200).json({
         message: 'Login successful',
-        token,
         user: {
             _id: user._id,
             name: user.name,
@@ -92,4 +95,14 @@ const getUser = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = { register, login, getUser };
+const logout = asyncHandler(async (req, res) => {
+    // Match cookie attributes used when setting (exclude maxAge when clearing)
+    const { maxAge, ...clearOptions } = getAuthCookieOptions();
+    res.clearCookie('token', clearOptions);
+
+    return res.status(200).json({
+        message: 'Logged out successfully',
+    });
+});
+
+module.exports = { register, login, getUser, logout };

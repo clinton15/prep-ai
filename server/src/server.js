@@ -12,6 +12,8 @@ require('dotenv').config();
 
 const express = require('express');
 const helmet = require('helmet');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const interviewProcessRoutes = require('./routes/interviewProcess.routes');
@@ -29,12 +31,19 @@ const PORT = process.env.PORT || 8080;
     Request flow (top → bottom):
 
     1. helmet        → sets secure HTTP headers
-    2. express.json  → parses JSON request bodies
-    3. routes        → auth, validation, rate limits, controllers
-    4. errorMiddleware → catches thrown/forwarded errors (must be last)
+    2. cors          → allows credentialed requests from the frontend
+    3. express.json  → parses JSON request bodies
+    4. cookieParser  → populates req.cookies (needed for JWT cookie auth)
+    5. routes        → auth, validation, rate limits, controllers
+    6. errorMiddleware → catches thrown/forwarded errors (must be last)
 */
 app.use(helmet());
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/processes', interviewProcessRoutes);
