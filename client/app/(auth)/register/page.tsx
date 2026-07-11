@@ -1,9 +1,13 @@
+import AuthCard from "@/components/auth/auth-card";
+import RegisterForm from "@/components/auth/register-form";
+
 export default function RegisterPage() {
     return (
-        <div>
-            <h1 className="text-3xl font-bold">
-                Register
-            </h1>
-        </div>
+        <AuthCard
+            title="Create Account"
+            description="Start preparing for interviews with AI."
+        >
+            <RegisterForm />
+        </AuthCard>
     );
 }

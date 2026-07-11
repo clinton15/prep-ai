@@ -1,10 +1,13 @@
-export default function LoginPage() {
+import AuthCard from "@/components/auth/auth-card";
+import LoginForm from "@/components/auth/login-form";
 
+export default function LoginPage() {
     return (
-        <div>
-            <h1 className="text-3xl font-bold">
-                Login
-            </h1>
-        </div>
+        <AuthCard
+            title="Welcome Back"
+            description="Sign in to continue your interview preparation."
+        >
+            <LoginForm />
+        </AuthCard>
     );
 }

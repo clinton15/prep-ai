@@ -1,57 +1,53 @@
-"use client";
-
 import {
     useMutation,
-    useQuery,
-    useQueryClient,
 } from "@tanstack/react-query";
 
 
 import {
     loginUser,
     registerUser,
-    getCurrentUser,
-    logoutUser,
 } from "@/services/auth.service";
 
-export const useCurrentUser = () => {
-    return useQuery({
-        queryKey: ["current-user"],
-        queryFn: getCurrentUser,
-        retry: false,
-    });
-};
 
-export const useLogin = () => {
-    const queryClient =
-        useQueryClient();
-    return useMutation({
+import type {
+    AuthResponse,
+    LoginPayload,
+    RegisterPayload,
+} from "@/types/auth";
+
+
+import type {
+    ApiError,
+} from "@/types/api-error";
+
+
+
+export function useLogin(){
+
+    return useMutation<
+        AuthResponse,
+        ApiError,
+        LoginPayload
+    >({
+
         mutationFn: loginUser,
-        onSuccess: (data) => {
-            queryClient.setQueryData(
-                ["current-user"],
-                data.user
-            );
-        },
-    });
-};
 
-export const useRegister = () => {
-    return useMutation({
+    });
+
+}
+
+
+
+export function useRegister(){
+
+    return useMutation<
+        AuthResponse,
+        ApiError,
+        RegisterPayload
+    >({
+
         mutationFn: registerUser,
+
     });
-};
 
-
-
-
-export const useLogout = () => {
-    const queryClient =
-        useQueryClient();
-    return useMutation({
-        mutationFn: logoutUser,
-        onSuccess: () => {
-            queryClient.clear();
-        },
-    });
-};
+}

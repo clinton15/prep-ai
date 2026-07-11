@@ -2,51 +2,46 @@ import { z } from "zod";
 
 
 export const loginSchema =
-z.object({
+    z.object({
 
-    email:
-        z.string()
-        .email("Invalid email"),
-
-
-    password:
-        z.string()
-        .min(
-            6,
-            "Password must be at least 6 characters"
-        ),
-
-});
+        email:
+            z.string()
+                .email("Invalid email"),
 
 
+        password:
+            z.string()
+                .min(
+                    6,
+                    "Password must be at least 6 characters"
+                ),
 
-export const registerSchema =
-z.object({
+    });
+
+
+
+export const registerSchema = z.object({
 
     name:
         z.string()
-        .min(
-            2,
-            "Name must contain at least 2 characters"
-        ),
+            .min(2, "Name must be at least 2 characters"),
 
 
     email:
         z.string()
-        .email("Invalid email"),
+            .email("Invalid email"),
 
 
     password:
         z.string()
-        .min(
-            6,
-            "Password must be at least 6 characters"
-        ),
+            .min(6, "Password must be at least 6 characters"),
 
 
     experience:
-        z.number()
-        .min(0)
-        .optional(),
+        z.coerce
+            .number()
+            .min(0)
+            .max(40)
+            .optional(),
 
 });
