@@ -1,13 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { loginSchema } from "@/lib/validations/auth";
-import { useLogin } from "@/hooks/use-auth";
+import {
+    CURRENT_USER_QUERY_KEY,
+    useLogin,
+} from "@/hooks/use-auth";
 
 import LoadingButton from "@/components/shared/loading-button";
 import PasswordInput from "@/components/auth/password-input";
@@ -31,6 +35,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginForm() {
 
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const loginMutation = useLogin();
 
@@ -46,13 +51,19 @@ export default function LoginForm() {
 
 
     /**
-     * Handles login API call
+     * Handles login API call.
+     * Seeds the current-user cache so ProtectedRoute can render immediately.
      */
     function onSubmit(values: LoginFormValues) {
 
         loginMutation.mutate(values, {
 
-            onSuccess: () => {
+            onSuccess: (data) => {
+
+                queryClient.setQueryData(
+                    CURRENT_USER_QUERY_KEY,
+                    data.user
+                );
 
                 toast.success(
                     "Logged in successfully"
