@@ -1,5 +1,6 @@
 import AuthCard from "@/components/auth/auth-card";
 import RegisterForm from "@/components/auth/register-form";
+import DemoLoginButton from "@/components/auth/demo-login-button";
 import Link from "next/link";
 
 export default function RegisterPage() {
@@ -18,6 +19,8 @@ export default function RegisterPage() {
                 >
                     Sign in
                 </Link>
+                {" · "}
+                <DemoLoginButton variant="link" />
             </p>
         </AuthCard>
     );
