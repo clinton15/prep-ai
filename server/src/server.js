@@ -18,6 +18,11 @@ const app = express();
 
 const PORT = process.env.PORT || 8080;
 
+// Browser Origin never has a trailing slash — normalize CLIENT_URL
+const clientOrigin = (process.env.CLIENT_URL || '')
+    .trim()
+    .replace(/\/+$/, '');
+
 if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
@@ -25,7 +30,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use(helmet());
 app.use(
     cors({
-        origin: process.env.CLIENT_URL,
+        origin: clientOrigin || false,
         credentials: true,
     })
 );

@@ -1,13 +1,15 @@
 /*
     Shared cookie options for the JWT auth cookie.
 
-    Development: secure=false so cookies work over http://localhost
-    Production:  set NODE_ENV=production to enable secure cookies (HTTPS)
+    Local (http://localhost): sameSite=lax, secure=false
+    Production (Vercel ↔ Render cross-site): sameSite=none, secure=true
 */
+const isProd = process.env.NODE_ENV === 'production';
+
 const getAuthCookieOptions = () => ({
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
