@@ -121,7 +121,7 @@ npm run seed:demo
 
 | Field | Value |
 |-------|--------|
-| Email | `demo@prepai.dev` |
+| Email | `testuser@yopmail.com` |
 | Password | `DemoPass123!` |
 
 Includes sample processes, questions, answers, and scores for dashboard charts.
@@ -136,8 +136,8 @@ Includes sample processes, questions, answers, and scores for dashboard charts.
 
 ## Development conventions
 
-- **Server state:** TanStack Query (no Redux / Zustand / Auth Context)
-- **Auth tokens:** httpOnly cookies only (no localStorage tokens)
+- **Server state:** TanStack Query
+- **Auth tokens:** httpOnly cookies only
 - **Forms:** React Hook Form + Zod
 - **API client:** Axios services under `client/services/`
 - **Backend layers:** Controllers → Services → Models
