@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 
 interface AuthCardProps {
     title: string;
@@ -7,11 +13,7 @@ interface AuthCardProps {
 }
 
 /**
- * Reusable authentication card.
- *
- * Used by:
- * - Login
- * - Register
+ * Clerk-inspired authentication card — clean, centered, quiet chrome.
  */
 export default function AuthCard({
     title,
@@ -19,24 +21,17 @@ export default function AuthCard({
     children,
 }: AuthCardProps) {
     return (
-        <Card
-            className="
-                w-full
-                max-w-md
-                shadow-lg
-            "
-        >
-            <CardHeader className="space-y-2 text-center">
-                <h1 className="text-3xl font-bold tracking-tight">
+        <Card className="w-full border-border/80 shadow-sm ring-1 ring-foreground/5">
+            <CardHeader className="space-y-1.5 px-6 pt-6 pb-2 text-center sm:px-8">
+                <CardTitle className="text-xl font-semibold tracking-tight">
                     {title}
-                </h1>
-
-                <p className="text-sm text-muted-foreground">
+                </CardTitle>
+                <CardDescription className="text-[0.8125rem] leading-relaxed">
                     {description}
-                </p>
+                </CardDescription>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="px-6 pb-6 sm:px-8 sm:pb-8">
                 {children}
             </CardContent>
         </Card>

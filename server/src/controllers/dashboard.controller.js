@@ -5,12 +5,6 @@ const InterviewAnswer = require('../models/interviewAnswer');
 const asyncHandler = require('../utils/asyncHandler');
 
 const getDashboard = asyncHandler(async (req, res) => {
-    /*
-        -------------------------------
-        Interview Process Statistics
-        -------------------------------
-    */
-
     const totalApplications =
         await InterviewProcess.countDocuments({
             user: req.user._id,
@@ -59,18 +53,12 @@ const getDashboard = asyncHandler(async (req, res) => {
             isArchived: false,
         });
 
-    /*
-        -------------------------------
-        Interview Rounds
-        -------------------------------
-    */
-
     const userProcesses = await InterviewProcess.find({
         user: req.user._id,
         isArchived: false,
     }).select('_id');
 
-    const processIds = userProcesses.map(process => process._id);
+    const processIds = userProcesses.map((process) => process._id);
 
     const totalRounds =
         await InterviewRound.countDocuments({
@@ -88,46 +76,50 @@ const getDashboard = asyncHandler(async (req, res) => {
     const pendingRounds =
         await InterviewRound.countDocuments({
             interviewProcess: { $in: processIds },
-            status: 'Pending',
+            status: 'Upcoming',
             isArchived: false,
         });
-
-    /*
-        -------------------------------
-        Questions
-        -------------------------------
-    */
 
     const rounds = await InterviewRound.find({
         interviewProcess: { $in: processIds },
         isArchived: false,
     }).select('_id');
 
-    const roundIds = rounds.map(round => round._id);
+    const roundIds = rounds.map((round) => round._id);
 
     const totalQuestions =
         await InterviewQuestion.countDocuments({
             interviewRound: { $in: roundIds },
             isArchived: false,
+            isFollowUp: false,
         });
 
-    /*
-        -------------------------------
-        Answers
-        -------------------------------
-    */
+    const completedQuestions =
+        await InterviewQuestion.countDocuments({
+            interviewRound: { $in: roundIds },
+            isArchived: false,
+            status: 'Completed',
+        });
+
+    const practicedQuestions =
+        await InterviewQuestion.countDocuments({
+            interviewRound: { $in: roundIds },
+            isArchived: false,
+            status: { $in: ['Practiced', 'Completed'] },
+        });
+
+    const completionPercentage =
+        totalQuestions > 0
+            ? Number(
+                  ((completedQuestions / totalQuestions) * 100).toFixed(1)
+              )
+            : 0;
 
     const totalAnswers =
         await InterviewAnswer.countDocuments({
             user: req.user._id,
             isArchived: false,
         });
-
-    /*
-        -------------------------------
-        Average Score
-        -------------------------------
-    */
 
     const averageScoreResult =
         await InterviewAnswer.aggregate([
@@ -150,15 +142,55 @@ const getDashboard = asyncHandler(async (req, res) => {
     const averageScore =
         averageScoreResult.length > 0
             ? Number(
-                averageScoreResult[0].averageScore.toFixed(1)
-            )
+                  averageScoreResult[0].averageScore.toFixed(1)
+              )
             : 0;
 
-    /*
-        -------------------------------
-        Recent Activity
-        -------------------------------
-    */
+    // Most practiced topics (by answer count joined to questions)
+    const topicStats = await InterviewAnswer.aggregate([
+        {
+            $match: {
+                user: req.user._id,
+                isArchived: false,
+            },
+        },
+        {
+            $lookup: {
+                from: 'interviewquestions',
+                localField: 'interviewQuestion',
+                foreignField: '_id',
+                as: 'question',
+            },
+        },
+        { $unwind: '$question' },
+        {
+            $group: {
+                _id: '$question.topic',
+                count: { $sum: 1 },
+                averageScore: { $avg: '$score' },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                topic: '$_id',
+                count: 1,
+                averageScore: {
+                    $round: ['$averageScore', 1],
+                },
+            },
+        },
+    ]);
+
+    const topTopics = [...topicStats]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+
+    // Weak topics: avg score below 6, at least 1 answer
+    const weakTopics = [...topicStats]
+        .filter((t) => t.averageScore < 6)
+        .sort((a, b) => a.averageScore - b.averageScore)
+        .slice(0, 6);
 
     const recentActivity =
         await InterviewProcess.find({
@@ -190,10 +222,15 @@ const getDashboard = asyncHandler(async (req, res) => {
             questions: {
                 generated: totalQuestions,
                 answered: totalAnswers,
+                practiced: practicedQuestions,
+                completed: completedQuestions,
+                completionPercentage,
             },
             performance: {
                 averageScore,
             },
+            topTopics,
+            weakTopics,
         },
         recentActivity,
     });

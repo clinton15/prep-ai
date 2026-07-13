@@ -10,17 +10,39 @@ const {
 const authMiddleware = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
 const {
+    validateQuery,
+    validateParams,
+} = require('../middleware/validate.middleware');
+const {
     createInterviewProcessSchema,
     updateInterviewProcessSchema,
+    listInterviewProcessesQuerySchema,
+    objectIdParam,
 } = require('../validations/interviewProcess.validation');
 
 router.use(authMiddleware);
 
-// Body validation runs before the controller; ownership checks stay in the controller
-router.post('/', validate(createInterviewProcessSchema), createInterviewProcess);
-router.get('/', getInterviewProcesses);
-router.get('/:id', getInterviewProcess);
-router.put('/:id', validate(updateInterviewProcessSchema), updateInterviewProcess);
-router.delete('/:id', archiveInterviewProcess);
+router.post(
+    '/',
+    validate(createInterviewProcessSchema),
+    createInterviewProcess
+);
+router.get(
+    '/',
+    validateQuery(listInterviewProcessesQuerySchema),
+    getInterviewProcesses
+);
+router.get('/:id', validateParams(objectIdParam), getInterviewProcess);
+router.put(
+    '/:id',
+    validateParams(objectIdParam),
+    validate(updateInterviewProcessSchema),
+    updateInterviewProcess
+);
+router.delete(
+    '/:id',
+    validateParams(objectIdParam),
+    archiveInterviewProcess
+);
 
 module.exports = router;

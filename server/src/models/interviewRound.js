@@ -71,4 +71,7 @@ const interviewRoundSchema = new mongoose.Schema(
     }
 );
 
+// Rounds-by-process and dashboard $in queries
+interviewRoundSchema.index({ interviewProcess: 1, isArchived: 1 });
+
 module.exports = mongoose.model('InterviewRound', interviewRoundSchema);

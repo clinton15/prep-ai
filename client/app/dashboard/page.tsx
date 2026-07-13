@@ -1,72 +1,101 @@
 "use client";
 
+import Link from "next/link";
+import { Plus } from "lucide-react";
+
 import ProtectedRoute from "@/components/auth/protected-route";
 import AppLayout from "@/components/layout/app-layout";
+import DashboardStatCards from "@/components/dashboard/dashboard-stat-cards";
+import ApplicationStatusChart from "@/components/dashboard/application-status-chart";
+import RoundsOverviewChart from "@/components/dashboard/rounds-overview-chart";
+import TopTopicsChart from "@/components/dashboard/top-topics-chart";
+import WeakTopicsCard from "@/components/dashboard/weak-topics-card";
+import RecentActivityList from "@/components/dashboard/recent-activity-list";
+import PageHeader from "@/components/shared/page-header";
+import QueryError from "@/components/shared/query-error";
 import { useCurrentUser } from "@/hooks/use-auth";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
     const { data: user } = useCurrentUser();
+    const {
+        data: dashboard,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    } = useDashboard();
+
+    const summary = dashboard?.summary;
+    const firstName = user?.name?.trim().split(/\s+/)[0] ?? "there";
 
     return (
         <ProtectedRoute>
             <AppLayout title="Dashboard">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        Welcome, {user?.name}
-                    </h1>
+                <PageHeader
+                    title={`Welcome back, ${firstName}`}
+                    description="Track applications, rounds, and practice progress."
+                    actions={
+                        <>
+                            <Button asChild size="sm">
+                                <Link href="/interviews/new">
+                                    <Plus className="size-3.5" />
+                                    Create Interview
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/interviews">View Interviews</Link>
+                            </Button>
+                        </>
+                    }
+                />
 
-                    <p className="mt-2 text-muted-foreground">
-                        Let&apos;s prepare for your next interview.
-                    </p>
-                </header>
+                {isError ? (
+                    <div className="mb-8">
+                        <QueryError
+                            error={error}
+                            message="Failed to load dashboard."
+                            onRetry={() => refetch()}
+                        />
+                    </div>
+                ) : null}
+
+                <div className="mb-8">
+                    <DashboardStatCards
+                        summary={summary}
+                        experience={user?.experience ?? 0}
+                        isLoading={isLoading}
+                    />
+                </div>
 
                 <section
-                    className="grid gap-6 md:grid-cols-3"
-                    aria-label="Overview"
+                    className="mb-8 grid gap-4 lg:grid-cols-2"
+                    aria-label="Charts"
                 >
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Experience</CardTitle>
-                        </CardHeader>
-
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                {user?.experience ?? 0} years
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Interview Processes</CardTitle>
-                        </CardHeader>
-
-                        <CardContent>
-                            <p className="text-3xl font-bold">0</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Questions Practiced</CardTitle>
-                        </CardHeader>
-
-                        <CardContent>
-                            <p className="text-3xl font-bold">0</p>
-                        </CardContent>
-                    </Card>
+                    <ApplicationStatusChart
+                        applications={summary?.applications}
+                        isLoading={isLoading}
+                    />
+                    <RoundsOverviewChart
+                        rounds={summary?.rounds}
+                        averageScore={summary?.performance.averageScore}
+                        isLoading={isLoading}
+                    />
+                    <TopTopicsChart
+                        topics={summary?.topTopics}
+                        isLoading={isLoading}
+                    />
+                    <WeakTopicsCard
+                        topics={summary?.weakTopics}
+                        isLoading={isLoading}
+                    />
                 </section>
 
-                <section className="mt-10 flex flex-wrap gap-4">
-                    <Button type="button">Create Interview</Button>
-
-                    <Button type="button" variant="outline">
-                        View Interviews
-                    </Button>
-                </section>
+                <RecentActivityList
+                    activity={dashboard?.recentActivity}
+                    isLoading={isLoading}
+                />
             </AppLayout>
         </ProtectedRoute>
     );

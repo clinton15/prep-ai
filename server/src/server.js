@@ -1,13 +1,3 @@
-// always follow the best practices for the server
-
-// 1. Import packages
-// 2. Load environment variables
-// 3. Create Express app
-// 4. Register middleware
-// 5. Register routes
-// 6. Start the server
-// 7. Handle server errors
-
 require('dotenv').config();
 
 const express = require('express');
@@ -22,27 +12,24 @@ const questionRoutes = require('./routes/interviewQuestion.routes');
 const answerRoutes = require('./routes/interviewAnswer.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const errorMiddleware = require('./middleware/error.middleware');
+const ApiError = require('./utils/ApiError');
 
 const app = express();
 
 const PORT = process.env.PORT || 8080;
 
-/*
-    Request flow (top → bottom):
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
 
-    1. helmet        → sets secure HTTP headers
-    2. cors          → allows credentialed requests from the frontend
-    3. express.json  → parses JSON request bodies
-    4. cookieParser  → populates req.cookies (needed for JWT cookie auth)
-    5. routes        → auth, validation, rate limits, controllers
-    6. errorMiddleware → catches thrown/forwarded errors (must be last)
-*/
 app.use(helmet());
-app.use(cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-}));
-app.use(express.json());
+app.use(
+    cors({
+        origin: process.env.CLIENT_URL,
+        credentials: true,
+    })
+);
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
@@ -53,11 +40,17 @@ app.use('/api/answers', answerRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Hello from Prep AI' });
+    res.json({
+        success: true,
+        message: 'Hello from Prep AI',
+    });
 });
 
-// Global error handler — Express only treats this as error middleware
-// when it has 4 args (err, req, res, next). Keep it after all routes.
+// Unmatched routes
+app.use((req, res, next) => {
+    next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`, 'NOT_FOUND'));
+});
+
 app.use(errorMiddleware);
 
 const startServer = async () => {

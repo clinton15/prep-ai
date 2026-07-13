@@ -13,6 +13,20 @@ const applicationStatusEnum = z.enum([
     'Withdrawn',
 ]);
 
+const objectIdParam = z.object({
+    id: z
+        .string()
+        .regex(/^[0-9a-fA-F]{24}$/, 'Invalid interview process id'),
+});
+
+const listInterviewProcessesQuerySchema = z.object({
+    company: z.string().trim().optional(),
+    role: z.string().trim().optional(),
+    status: applicationStatusEnum.optional(),
+    page: z.coerce.number().int().positive().optional().default(1),
+    limit: z.coerce.number().int().positive().max(100).optional().default(10),
+});
+
 const createInterviewProcessSchema = z.object({
     company: z
         .string({ error: 'Company and role are required' })
@@ -47,4 +61,6 @@ const updateInterviewProcessSchema = z.object({
 module.exports = {
     createInterviewProcessSchema,
     updateInterviewProcessSchema,
+    listInterviewProcessesQuerySchema,
+    objectIdParam,
 };

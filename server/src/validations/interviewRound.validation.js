@@ -4,6 +4,19 @@ const { z } = require('zod');
     Request-body schemas for interview rounds.
     ObjectId format is validated here; DB ownership is checked in the controller.
 */
+const objectIdParam = z.object({
+    id: z
+        .string()
+        .regex(/^[0-9a-fA-F]{24}$/, 'Invalid interview round id'),
+});
+
+const listInterviewRoundsQuerySchema = z.object({
+    processId: z
+        .string()
+        .regex(/^[0-9a-fA-F]{24}$/, 'Invalid interview process id')
+        .optional(),
+});
+
 const createInterviewRoundSchema = z.object({
     interviewProcess: z
         .string({
@@ -43,4 +56,6 @@ const updateInterviewRoundSchema = z.object({
 module.exports = {
     createInterviewRoundSchema,
     updateInterviewRoundSchema,
+    listInterviewRoundsQuerySchema,
+    objectIdParam,
 };

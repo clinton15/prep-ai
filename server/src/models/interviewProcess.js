@@ -62,4 +62,13 @@ const interviewProcessSchema = new mongoose.Schema({
     timestamps: true,
 });
 
+// List by owner + soft-delete + sort
+interviewProcessSchema.index({ user: 1, isArchived: 1, createdAt: -1 });
+// Status filters / dashboard counts
+interviewProcessSchema.index({
+    user: 1,
+    isArchived: 1,
+    applicationStatus: 1,
+});
+
 module.exports = mongoose.model('InterviewProcess', interviewProcessSchema);

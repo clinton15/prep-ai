@@ -17,11 +17,16 @@ export default function LoadingButton({
     return (
         <Button
             disabled={loading || disabled}
+            aria-busy={loading || undefined}
+            aria-disabled={loading || disabled || undefined}
             {...props}
         >
-            {loading && (
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {loading ? (
+                <LoaderCircle
+                    className="mr-2 h-4 w-4 animate-spin"
+                    aria-hidden
+                />
+            ) : null}
 
             {children}
         </Button>

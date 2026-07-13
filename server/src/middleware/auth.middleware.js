@@ -1,34 +1,36 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ApiError = require('../utils/ApiError');
+const asyncHandler = require('../utils/asyncHandler');
 
-const authMiddleware = async (req, res, next) => {
-    // JWT is sent automatically by the browser via the HTTP-only cookie
+const authMiddleware = asyncHandler(async (req, res, next) => {
     const token = req.cookies?.token;
 
     if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+        throw new ApiError(401, 'No token provided', 'UNAUTHORIZED');
     }
 
     try {
-        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Fetch user safely (exclude password)
         const user = await User.findById(decoded.id).select('-password');
 
-        // Handle deleted user case
         if (!user) {
-            return res.status(401).json({ message: 'User not found' });
+            throw new ApiError(401, 'User not found', 'UNAUTHORIZED');
         }
 
-        // Attach user to request
         req.user = user;
-
         next();
     } catch (error) {
-        console.error('JWT verification error:', error.message);
-        return res.status(401).json({ message: 'Invalid or expired token' });
+        if (error instanceof ApiError) {
+            throw error;
+        }
+
+        throw new ApiError(
+            401,
+            'Invalid or expired token',
+            'UNAUTHORIZED'
+        );
     }
-};
+});
 
 module.exports = authMiddleware;

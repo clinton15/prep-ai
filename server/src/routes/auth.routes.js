@@ -8,14 +8,19 @@ const {
 } = require('../controllers/auth.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
+const { authRateLimiter } = require('../middleware/rateLimit.middleware');
 const {
     registerSchema,
     loginSchema,
 } = require('../validations/auth.validation');
 
-// validate → checks body shape; controller → business logic only
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
+router.post(
+    '/register',
+    authRateLimiter,
+    validate(registerSchema),
+    register
+);
+router.post('/login', authRateLimiter, validate(loginSchema), login);
 router.post('/logout', logout);
 router.get('/me', authMiddleware, getUser);
 

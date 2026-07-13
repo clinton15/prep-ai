@@ -2,67 +2,82 @@ const mongoose = require('mongoose');
 
 const interviewAnswerSchema = new mongoose.Schema(
     {
-        // User who submitted the answer
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         },
 
-        // Question being answered
         interviewQuestion: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'InterviewQuestion',
             required: true,
         },
 
-        // Candidate's answer
         answer: {
             type: String,
             required: true,
             trim: true,
         },
 
-        // AI generated score out of 10
+        // Overall score (average of technical + communication)
         score: {
             type: Number,
             min: 0,
             max: 10,
         },
 
-        // AI feedback on the answer
+        technicalScore: {
+            type: Number,
+            min: 0,
+            max: 10,
+        },
+
+        communicationScore: {
+            type: Number,
+            min: 0,
+            max: 10,
+        },
+
         feedback: {
             type: String,
             trim: true,
         },
 
-        // What the candidate did well
         strengths: [
             {
                 type: String,
                 trim: true,
-            }
+            },
         ],
 
-        // Areas where candidate can improve
         improvements: [
             {
                 type: String,
                 trim: true,
-            }
+            },
         ],
 
-        // Soft delete/archive flag
+        missingConcepts: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
+
         isArchived: {
             type: Boolean,
             default: false,
         },
-
     },
     {
         timestamps: true,
     }
 );
+
+interviewAnswerSchema.index({ user: 1, interviewQuestion: 1 });
+// Dashboard aggregates / counts by user
+interviewAnswerSchema.index({ user: 1, isArchived: 1 });
 
 module.exports = mongoose.model(
     'InterviewAnswer',

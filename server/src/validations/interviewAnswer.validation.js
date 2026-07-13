@@ -14,6 +14,13 @@ const evaluateAnswerSchema = z.object({
         .min(1, 'Question id and answer are required'),
 });
 
+const questionIdParamsSchema = z.object({
+    questionId: z
+        .string()
+        .regex(/^[0-9a-fA-F]{24}$/, 'Invalid question id'),
+});
+
 module.exports = {
     evaluateAnswerSchema,
+    questionIdParamsSchema,
 };

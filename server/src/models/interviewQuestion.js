@@ -2,29 +2,24 @@ const mongoose = require('mongoose');
 
 const interviewQuestionSchema = new mongoose.Schema(
     {
-        // Parent interview round
         interviewRound: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'InterviewRound',
             required: true,
         },
 
-        // AI-generated interview question
         question: {
             type: String,
             required: true,
             trim: true,
         },
 
-        // AI-generated ideal answer
         expectedAnswer: {
             type: String,
             required: true,
             trim: true,
         },
 
-        // Primary topic being tested
-        // e.g. React, JavaScript, CSS, Node.js
         topic: {
             type: String,
             required: true,
@@ -37,20 +32,47 @@ const interviewQuestionSchema = new mongoose.Schema(
             required: true,
         },
 
-        // Display order within the interview
         order: {
             type: Number,
             required: true,
             min: 1,
         },
 
-        // Indicates whether the candidate has answered this question
+        // Generated → Practiced (after evaluation) → Completed (user marks done)
+        status: {
+            type: String,
+            enum: ['Generated', 'Practiced', 'Completed'],
+            default: 'Generated',
+        },
+
         isAnswered: {
             type: Boolean,
             default: false,
         },
 
-        // Soft delete
+        isBookmarked: {
+            type: Boolean,
+            default: false,
+        },
+
+        notes: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+
+        // Follow-up questions link back to the parent question
+        parentQuestion: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'InterviewQuestion',
+            default: null,
+        },
+
+        isFollowUp: {
+            type: Boolean,
+            default: false,
+        },
+
         isArchived: {
             type: Boolean,
             default: false,
@@ -60,6 +82,18 @@ const interviewQuestionSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+interviewQuestionSchema.index({ interviewRound: 1, order: 1 });
+interviewQuestionSchema.index({ parentQuestion: 1 });
+// List roots vs follow-ups
+interviewQuestionSchema.index({
+    interviewRound: 1,
+    isArchived: 1,
+    isFollowUp: 1,
+});
+interviewQuestionSchema.index({ interviewRound: 1, status: 1 });
+interviewQuestionSchema.index({ interviewRound: 1, topic: 1 });
+interviewQuestionSchema.index({ interviewRound: 1, isBookmarked: 1 });
 
 module.exports = mongoose.model(
     'InterviewQuestion',
