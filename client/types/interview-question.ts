@@ -29,7 +29,8 @@ export interface InterviewQuestion {
     _id: string;
     interviewRound: string;
     question: string;
-    expectedAnswer: string;
+    /** Omitted from list/fetch APIs; loaded via reveal endpoint. */
+    expectedAnswer?: string;
     topic: string;
     difficulty: QuestionDifficulty;
     order: number;
@@ -42,6 +43,11 @@ export interface InterviewQuestion {
     isArchived: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface ExpectedAnswerResponse {
+    message: string;
+    expectedAnswer: string;
 }
 
 export interface GenerateQuestionsPayload {

@@ -6,6 +6,7 @@ const {
     updateQuestion,
     generateFollowUps,
     getQuestionById,
+    getExpectedAnswer,
 } = require('../controllers/interviewQuestion.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
@@ -50,6 +51,12 @@ router.get(
     '/item/:id',
     validateParams(questionIdParamsSchema),
     getQuestionById
+);
+
+router.get(
+    '/:id/expected-answer',
+    validateParams(questionIdParamsSchema),
+    getExpectedAnswer
 );
 
 router.get(

@@ -75,6 +75,13 @@ const interviewAnswerSchema = new mongoose.Schema(
     }
 );
 
+//index is used to speed up the search for answers by user and interview question
+//example: find all answers for a given user and interview question
+//so 1 basically means ascending order
+//we can also avoid using index by using a compound index
+//eg: interviewAnswerSchema.index({ user: 1, interviewQuestion: 1, isArchived: 1 });
+//we can also avoid using index altogether but it will be slower
+//practical eg is find all answers for a given user and interview question and isArchived is false
 interviewAnswerSchema.index({ user: 1, interviewQuestion: 1 });
 // Dashboard aggregates / counts by user
 interviewAnswerSchema.index({ user: 1, isArchived: 1 });

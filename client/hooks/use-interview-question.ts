@@ -9,12 +9,14 @@ import {
 import {
     generateFollowUps,
     generateQuestions,
+    getExpectedAnswer,
     getQuestionsByRound,
     updateQuestion,
 } from "@/services/interview-question.service";
 
 import type { ApiError } from "@/types/api-error";
 import type {
+    ExpectedAnswerResponse,
     GenerateQuestionsPayload,
     InterviewQuestionResponse,
     InterviewQuestionsResponse,
@@ -27,6 +29,8 @@ export const interviewQuestionKeys = {
     lists: () => [...interviewQuestionKeys.all, "list"] as const,
     byRound: (roundId: string, filters?: QuestionFilters) =>
         [...interviewQuestionKeys.lists(), roundId, filters ?? {}] as const,
+    expectedAnswer: (questionId: string) =>
+        [...interviewQuestionKeys.all, "expected-answer", questionId] as const,
 };
 
 export function useQuestionsByRound(
@@ -86,5 +90,18 @@ export function useGenerateFollowUps(roundId: string) {
                 queryKey: [...interviewQuestionKeys.lists(), roundId],
             });
         },
+    });
+}
+
+export function useExpectedAnswer(
+    questionId: string,
+    enabled: boolean
+) {
+    return useQuery<ExpectedAnswerResponse, ApiError>({
+        queryKey: interviewQuestionKeys.expectedAnswer(questionId),
+        queryFn: () => getExpectedAnswer(questionId),
+        enabled: enabled && Boolean(questionId),
+        staleTime: Infinity,
+        retry: false,
     });
 }

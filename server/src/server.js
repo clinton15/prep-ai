@@ -27,6 +27,14 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
 
+// Helmet is a middleware that helps to secure the app by setting various HTTP headers
+//eg. it helps to prevent XSS attacks by setting the X-XSS-Protection header to 1; mode=block
+//It helps to prevent Clickjacking attacks by setting the X-Frame-Options header to SAMEORIGIN
+//It helps to prevent MIME type sniffing by setting the X-Content-Type-Options header to nosniff
+//It helps to prevent cross-site scripting (XSS) attacks by setting the Content-Security-Policy header
+//It helps to prevent cross-site request forgery (CSRF) attacks by setting the X-CSRF-Token header
+//It helps to prevent cross-site scripting (XSS) attacks by setting the X-XSS-Protection header to 1; mode=block
+//It helps to prevent cross-site request forgery (CSRF) attacks by setting the X-CSRF-Token header
 app.use(helmet());
 app.use(
     cors({
@@ -34,9 +42,13 @@ app.use(
         credentials: true,
     })
 );
+// express.json is a middleware that parses the incoming request body in a JSON format without which we won't be able to parse the request body
 app.use(express.json({ limit: '1mb' }));
+// cookieParser is a middleware that parses the incoming request cookies in a JSON format without which we won't be able to parse the request cookies
+//it is used to parse the cookies attached to the request
 app.use(cookieParser());
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/processes', interviewProcessRoutes);
 app.use('/api/rounds', interviewRoundRoutes);

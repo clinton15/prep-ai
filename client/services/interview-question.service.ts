@@ -1,6 +1,7 @@
 import api from "./api";
 
 import type {
+    ExpectedAnswerResponse,
     GenerateQuestionsPayload,
     InterviewQuestionResponse,
     InterviewQuestionsResponse,
@@ -61,6 +62,15 @@ export const generateFollowUps = async (
 ): Promise<InterviewQuestionsResponse> => {
     const response = await api.post(
         `/questions/${questionId}/follow-ups`
+    );
+    return response.data;
+};
+
+export const getExpectedAnswer = async (
+    questionId: string
+): Promise<ExpectedAnswerResponse> => {
+    const response = await api.get(
+        `/questions/${questionId}/expected-answer`
     );
     return response.data;
 };

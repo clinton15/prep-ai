@@ -17,6 +17,13 @@ const {
 
 const DIFFICULTY_RANK = { Easy: 1, Medium: 2, Hard: 3 };
 
+/** Strip expectedAnswer so clients cannot peek during practice. */
+function toPublicQuestion(doc) {
+    const obj = doc?.toObject ? doc.toObject() : { ...doc };
+    delete obj.expectedAnswer;
+    return obj;
+}
+
 async function assertQuestionOwnership(questionId, userId) {
     if (!mongoose.Types.ObjectId.isValid(questionId)) {
         throw new ApiError(400, 'Invalid question id');
@@ -118,7 +125,7 @@ const generateQuestions = asyncHandler(async (req, res) => {
 
     return res.status(201).json({
         message: 'Interview questions generated successfully',
-        questions: savedQuestions,
+        questions: savedQuestions.map(toPublicQuestion),
     });
 });
 
@@ -179,7 +186,9 @@ const getQuestions = asyncHandler(async (req, res) => {
         };
     }
 
-    let questions = await InterviewQuestion.find(filter);
+    let questions = await InterviewQuestion.find(filter).select(
+        '-expectedAnswer'
+    );
 
     const direction = order === 'desc' ? -1 : 1;
 
@@ -256,7 +265,7 @@ const updateQuestion = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
         message: 'Interview question updated successfully',
-        question: interviewQuestion,
+        question: toPublicQuestion(interviewQuestion),
     });
 });
 
@@ -337,7 +346,7 @@ const generateFollowUps = asyncHandler(async (req, res) => {
 
     return res.status(201).json({
         message: 'Follow-up questions generated successfully',
-        questions: savedQuestions,
+        questions: savedQuestions.map(toPublicQuestion),
     });
 });
 
@@ -351,7 +360,21 @@ const getQuestionById = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
         message: 'Interview question fetched successfully',
-        question: interviewQuestion,
+        question: toPublicQuestion(interviewQuestion),
+    });
+});
+
+const getExpectedAnswer = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const { interviewQuestion } = await assertQuestionOwnership(
+        id,
+        req.user._id
+    );
+
+    return res.status(200).json({
+        message: 'Expected answer fetched successfully',
+        expectedAnswer: interviewQuestion.expectedAnswer,
     });
 });
 
@@ -361,4 +384,5 @@ module.exports = {
     updateQuestion,
     generateFollowUps,
     getQuestionById,
+    getExpectedAnswer,
 };

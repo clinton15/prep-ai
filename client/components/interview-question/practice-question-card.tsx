@@ -12,6 +12,7 @@ import {
 } from "@/hooks/use-interview-answer";
 import {
     useGenerateFollowUps,
+    useExpectedAnswer,
     useUpdateQuestion,
 } from "@/hooks/use-interview-question";
 import {
@@ -73,6 +74,12 @@ export default function PracticeQuestionCard({
     const followUpMutation = useGenerateFollowUps(roundId);
     const { data: priorAnswerData, isLoading: priorLoading } =
         useAnswerByQuestion(question._id);
+    const {
+        data: expectedAnswerData,
+        isLoading: expectedAnswerLoading,
+        isError: expectedAnswerError,
+        error: expectedAnswerErrorData,
+    } = useExpectedAnswer(question._id, revealed);
 
     const [sessionEvaluation, setSessionEvaluation] =
         useState<InterviewAnswer | null>(null);
@@ -305,10 +312,12 @@ export default function PracticeQuestionCard({
                             type="button"
                             variant="outline"
                             onClick={onReveal}
-                            disabled={revealed}
+                            disabled={revealed || expectedAnswerLoading}
                         >
                             {revealed
-                                ? "Expected answer shown"
+                                ? expectedAnswerLoading
+                                    ? "Loading expected answer..."
+                                    : "Expected answer shown"
                                 : "Reveal expected answer"}
                         </Button>
 
@@ -334,9 +343,19 @@ export default function PracticeQuestionCard({
                     <h3 className="mb-2 text-sm font-medium">
                         Expected answer
                     </h3>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                        {question.expectedAnswer}
-                    </p>
+                    {expectedAnswerLoading ? (
+                        <Skeleton className="h-20 w-full" />
+                    ) : expectedAnswerError ? (
+                        <p className="text-sm text-destructive">
+                            {expectedAnswerErrorData?.response?.data
+                                ?.message ??
+                                "Failed to load expected answer"}
+                        </p>
+                    ) : (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                            {expectedAnswerData?.expectedAnswer}
+                        </p>
+                    )}
                 </section>
             ) : null}
 
