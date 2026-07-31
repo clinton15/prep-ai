@@ -11,8 +11,10 @@ import {
     generateQuestions,
     getExpectedAnswer,
     getQuestionsByRound,
+    parseResume,
     updateQuestion,
 } from "@/services/interview-question.service";
+import { interviewProcessKeys } from "@/hooks/use-interview-process";
 
 import type { ApiError } from "@/types/api-error";
 import type {
@@ -20,6 +22,7 @@ import type {
     GenerateQuestionsPayload,
     InterviewQuestionResponse,
     InterviewQuestionsResponse,
+    ParseResumeResponse,
     QuestionFilters,
     UpdateQuestionPayload,
 } from "@/types/interview-question";
@@ -45,7 +48,7 @@ export function useQuestionsByRound(
     });
 }
 
-export function useGenerateQuestions(roundId: string) {
+export function useGenerateQuestions(roundId: string, processId?: string) {
     const queryClient = useQueryClient();
 
     return useMutation<
@@ -58,7 +61,18 @@ export function useGenerateQuestions(roundId: string) {
             queryClient.invalidateQueries({
                 queryKey: [...interviewQuestionKeys.lists(), roundId],
             });
+            if (processId) {
+                queryClient.invalidateQueries({
+                    queryKey: interviewProcessKeys.detail(processId),
+                });
+            }
         },
+    });
+}
+
+export function useParseResume() {
+    return useMutation<ParseResumeResponse, ApiError, File>({
+        mutationFn: parseResume,
     });
 }
 

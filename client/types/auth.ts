@@ -35,3 +35,38 @@ export interface RegisterPayload {
     experience?: number;
 
 }
+
+
+export interface ForgotPasswordPayload {
+
+    email: string;
+
+}
+
+
+export interface ForgotPasswordResponse {
+
+    message: string;
+
+    /** Present only in non-production API responses */
+    resetUrl?: string | null;
+
+    resetToken?: string;
+
+}
+
+
+export interface ResetPasswordPayload {
+
+    token: string;
+
+    password: string;
+
+}
+
+
+export interface MessageResponse {
+
+    message: string;
+
+}

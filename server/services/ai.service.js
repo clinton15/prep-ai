@@ -1,20 +1,4 @@
-const { GoogleGenAI } = require('@google/genai');
-
-let ai;
-
-const getAI = () => {
-    if (!ai) {
-        const apiKey = process.env.GEMINI_API_KEY;
-
-        if (!apiKey) {
-            throw new Error('GEMINI_API_KEY is not set');
-        }
-
-        ai = new GoogleGenAI({ apiKey });
-    }
-
-    return ai;
-};
+const { generateJson } = require('./geminiClient');
 
 function buildDifficultyInstruction(difficulty = 'Mixed') {
     if (difficulty === 'Mixed') {
@@ -26,6 +10,33 @@ function buildDifficultyInstruction(difficulty = 'Mixed') {
 - Match the depth and complexity to ${difficulty} level interview questions.`;
 }
 
+function buildOptionalContextSection({ jobDescription, resumeText }) {
+    const sections = [];
+
+    if (jobDescription) {
+        sections.push(`Job Description (use to ground questions in this role's requirements):
+
+${jobDescription}`);
+    }
+
+    if (resumeText) {
+        sections.push(`Candidate Resume (use to tailor questions to their background, stack, and experience — do not invent projects not mentioned):
+
+${resumeText}`);
+    }
+
+    if (sections.length === 0) {
+        return '';
+    }
+
+    return `
+
+Additional Context
+
+${sections.join('\n\n')}
+`;
+}
+
 function buildQuestionPrompt({
     company,
     role,
@@ -34,6 +45,8 @@ function buildQuestionPrompt({
     roundType,
     numberOfQuestions = 10,
     difficulty = 'Mixed',
+    jobDescription,
+    resumeText,
 }) {
     return `
 You are an experienced Senior Software Engineering Interviewer.
@@ -53,11 +66,13 @@ Interview Round: ${roundTitle}
 Round Type: ${roundType}
 
 Difficulty preference: ${difficulty}
-
+${buildOptionalContextSection({ jobDescription, resumeText })}
 Instructions:
 
 - The questions should match the candidate's experience level.
 - The questions should be relevant to the role and interview round.
+- When a job description is provided, prioritize skills and responsibilities from it.
+- When a resume is provided, prefer questions that probe their stated experience and stack; avoid generic questions that ignore their background.
 - Include a balanced mix of:
   - Theory questions
   - Coding questions
@@ -109,26 +124,7 @@ Return ONLY the JSON array.
 }
 
 async function generateQuestionsFromAI(prompt) {
-    try {
-        const response = await getAI().models.generateContent({
-            model: process.env.GEMINI_MODEL,
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-            },
-        });
-
-        const text = response.text;
-
-        if (!text) {
-            throw new Error('Empty response received from Gemini');
-        }
-
-        return JSON.parse(text);
-    } catch (error) {
-        console.error('Gemini Error:', error);
-        throw new Error('Failed to generate questions from AI');
-    }
+    return generateJson(prompt, { operation: 'question_generation' });
 }
 
 function buildEvaluationPrompt({
@@ -207,34 +203,7 @@ Return ONLY JSON.
 }
 
 async function evaluateAnswerFromAI(prompt) {
-    try {
-        const response = await getAI().models.generateContent({
-            model: process.env.GEMINI_MODEL,
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-            },
-        });
-
-        const text = response.text;
-
-        if (!text) {
-            throw new Error(
-                'Empty response received from Gemini'
-            );
-        }
-
-        return JSON.parse(text);
-    } catch (error) {
-        console.error(
-            'Gemini Evaluation Error:',
-            error
-        );
-
-        throw new Error(
-            'Failed to evaluate answer from AI'
-        );
-    }
+    return generateJson(prompt, { operation: 'answer_evaluation' });
 }
 
 function buildFollowUpPrompt({
@@ -242,6 +211,8 @@ function buildFollowUpPrompt({
     expectedAnswer,
     topic,
     difficulty,
+    jobDescription,
+    resumeText,
 }) {
     return `
 You are an experienced Senior Software Engineering Interviewer.
@@ -258,7 +229,7 @@ ${expectedAnswer}
 
 Topic: ${topic}
 Difficulty: ${difficulty}
-
+${buildOptionalContextSection({ jobDescription, resumeText })}
 Generate:
 1. A deeper technical follow-up that probes understanding further
 2. A practical scenario / real-world application follow-up
@@ -293,26 +264,7 @@ Return ONLY the JSON array.
 }
 
 async function generateFollowUpsFromAI(prompt) {
-    try {
-        const response = await getAI().models.generateContent({
-            model: process.env.GEMINI_MODEL,
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-            },
-        });
-
-        const text = response.text;
-
-        if (!text) {
-            throw new Error('Empty response received from Gemini');
-        }
-
-        return JSON.parse(text);
-    } catch (error) {
-        console.error('Gemini Follow-up Error:', error);
-        throw new Error('Failed to generate follow-up questions from AI');
-    }
+    return generateJson(prompt, { operation: 'follow_up_generation' });
 }
 
 module.exports = {

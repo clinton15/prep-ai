@@ -192,6 +192,91 @@ const getDashboard = asyncHandler(async (req, res) => {
         .sort((a, b) => a.averageScore - b.averageScore)
         .slice(0, 6);
 
+    // Per-topic score trend over time (weekly buckets)
+    const topicTrendRaw = await InterviewAnswer.aggregate([
+        {
+            $match: {
+                user: req.user._id,
+                isArchived: false,
+            },
+        },
+        {
+            $lookup: {
+                from: 'interviewquestions',
+                localField: 'interviewQuestion',
+                foreignField: '_id',
+                as: 'question',
+            },
+        },
+        { $unwind: '$question' },
+        {
+            $group: {
+                _id: {
+                    topic: '$question.topic',
+                    week: {
+                        $dateToString: {
+                            format: '%Y-%m-%d',
+                            date: {
+                                $dateTrunc: {
+                                    date: '$createdAt',
+                                    unit: 'week',
+                                },
+                            },
+                        },
+                    },
+                },
+                averageScore: { $avg: '$score' },
+                count: { $sum: 1 },
+            },
+        },
+        {
+            $group: {
+                _id: '$_id.topic',
+                points: {
+                    $push: {
+                        date: '$_id.week',
+                        averageScore: {
+                            $round: ['$averageScore', 1],
+                        },
+                        count: '$count',
+                    },
+                },
+                totalCount: { $sum: '$count' },
+                overallAverage: { $avg: '$averageScore' },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                topic: '$_id',
+                points: 1,
+                totalCount: 1,
+                overallAverage: {
+                    $round: ['$overallAverage', 1],
+                },
+            },
+        },
+        { $sort: { totalCount: -1 } },
+    ]);
+
+    const topicProgress = topicTrendRaw
+        .map((series) => ({
+            ...series,
+            points: [...series.points].sort((a, b) =>
+                a.date.localeCompare(b.date)
+            ),
+        }))
+        // Prefer weak topics with enough history; else top practiced topics
+        .filter((s) => s.points.length >= 1)
+        .sort((a, b) => {
+            const aWeak = a.overallAverage < 6 ? 0 : 1;
+            const bWeak = b.overallAverage < 6 ? 0 : 1;
+            if (aWeak !== bWeak) return aWeak - bWeak;
+            return b.totalCount - a.totalCount;
+        })
+        .slice(0, 5)
+        .map(({ topic, points }) => ({ topic, points }));
+
     const recentActivity =
         await InterviewProcess.find({
             user: req.user._id,
@@ -231,6 +316,7 @@ const getDashboard = asyncHandler(async (req, res) => {
             },
             topTopics,
             weakTopics,
+            topicProgress,
         },
         recentActivity,
     });

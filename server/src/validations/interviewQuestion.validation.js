@@ -8,6 +8,13 @@ const objectId = z
     Shape checks only (required fields, ObjectId format, defaults).
     Ownership / "already generated" checks remain in the controller.
 */
+const optionalContextText = z
+    .string()
+    .trim()
+    .max(50000, 'Text is too long (max 50,000 characters)')
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined));
+
 const generateQuestionsSchema = z.object({
     interviewRoundId: z
         .string({ error: 'Interview round id is required' })
@@ -26,6 +33,8 @@ const generateQuestionsSchema = z.object({
         })
         .optional()
         .default('Mixed'),
+    jobDescription: optionalContextText,
+    resumeText: optionalContextText,
 });
 
 const updateQuestionSchema = z

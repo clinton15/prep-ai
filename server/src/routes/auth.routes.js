@@ -5,6 +5,8 @@ const {
     login,
     getUser,
     logout,
+    forgotPassword,
+    resetPassword,
 } = require('../controllers/auth.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
@@ -12,6 +14,8 @@ const { authRateLimiter } = require('../middleware/rateLimit.middleware');
 const {
     registerSchema,
     loginSchema,
+    forgotPasswordSchema,
+    resetPasswordSchema,
 } = require('../validations/auth.validation');
 
 router.post(
@@ -21,6 +25,18 @@ router.post(
     register
 );
 router.post('/login', authRateLimiter, validate(loginSchema), login);
+router.post(
+    '/forgot-password',
+    authRateLimiter,
+    validate(forgotPasswordSchema),
+    forgotPassword
+);
+router.post(
+    '/reset-password',
+    authRateLimiter,
+    validate(resetPasswordSchema),
+    resetPassword
+);
 router.post('/logout', logout);
 router.get('/me', authMiddleware, getUser);
 

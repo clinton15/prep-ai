@@ -10,6 +10,16 @@ export const generateQuestionsSchema = z.object({
         .min(1, "At least 1 question")
         .max(50, "Cannot exceed 50 questions"),
     difficulty: z.enum(GENERATE_DIFFICULTIES),
+    jobDescription: z
+        .string()
+        .max(50000, "Job description is too long")
+        .optional()
+        .or(z.literal("")),
+    resumeText: z
+        .string()
+        .max(50000, "Resume text is too long")
+        .optional()
+        .or(z.literal("")),
 });
 
 export type GenerateQuestionsFormValues = z.infer<
@@ -24,5 +34,7 @@ export function toGenerateQuestionsPayload(
         interviewRoundId,
         numberOfQuestions: values.numberOfQuestions,
         difficulty: values.difficulty,
+        jobDescription: values.jobDescription?.trim() || undefined,
+        resumeText: values.resumeText?.trim() || undefined,
     };
 }

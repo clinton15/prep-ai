@@ -10,14 +10,20 @@ import { useRouter } from "next/navigation";
 import {
     loginUser,
     registerUser,
+    forgotPassword,
+    resetPassword,
     getCurrentUser,
     logoutUser,
 } from "@/services/auth.service";
 
 import type {
     AuthResponse,
+    ForgotPasswordPayload,
+    ForgotPasswordResponse,
     LoginPayload,
+    MessageResponse,
     RegisterPayload,
+    ResetPasswordPayload,
     User,
 } from "@/types/auth";
 
@@ -35,6 +41,26 @@ export function useLogin() {
 export function useRegister() {
     return useMutation<AuthResponse, ApiError, RegisterPayload>({
         mutationFn: registerUser,
+    });
+}
+
+export function useForgotPassword() {
+    return useMutation<
+        ForgotPasswordResponse,
+        ApiError,
+        ForgotPasswordPayload
+    >({
+        mutationFn: forgotPassword,
+    });
+}
+
+export function useResetPassword() {
+    return useMutation<
+        MessageResponse,
+        ApiError,
+        ResetPasswordPayload
+    >({
+        mutationFn: resetPassword,
     });
 }
 

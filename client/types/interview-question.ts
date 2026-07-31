@@ -54,6 +54,14 @@ export interface GenerateQuestionsPayload {
     interviewRoundId: string;
     numberOfQuestions?: number;
     difficulty?: GenerateDifficulty;
+    jobDescription?: string;
+    resumeText?: string;
+}
+
+export interface ParseResumeResponse {
+    message: string;
+    text: string;
+    fileName: string;
 }
 
 export interface UpdateQuestionPayload {

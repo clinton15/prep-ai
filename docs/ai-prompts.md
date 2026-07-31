@@ -6,7 +6,7 @@ All prompts live in [`server/services/ai.service.js`](../server/services/ai.serv
 
 **Purpose:** Produce N interview questions for a company/role/round with a difficulty preference.
 
-**Inputs:** `company`, `role`, `experience`, `roundTitle`, `roundType`, `numberOfQuestions`, `difficulty` (`Easy` | `Medium` | `Hard` | `Mixed`).
+**Inputs:** `company`, `role`, `experience`, `roundTitle`, `roundType`, `numberOfQuestions`, `difficulty` (`Easy` | `Medium` | `Hard` | `Mixed`), optional `jobDescription`, optional `resumeText`.
 
 **Output shape (JSON array):**
 
@@ -22,7 +22,7 @@ All prompts live in [`server/services/ai.service.js`](../server/services/ai.serv
 ]
 ```
 
-**Notes:** For non-`Mixed` difficulty, the controller forces stored difficulty to the requested value. Generation is one-shot per round (409 if questions already exist).
+**Notes:** For non-`Mixed` difficulty, the controller forces stored difficulty to the requested value. Generation is one-shot per round (409 if questions already exist). When JD/resume text is provided, they are included in the prompt and persisted on the interview process for follow-ups. Resume files are parsed via `POST /api/questions/parse-resume` (PDF/DOCX) — binary is not stored.
 
 ## Answer evaluation — `buildEvaluationPrompt`
 
@@ -50,7 +50,7 @@ All prompts live in [`server/services/ai.service.js`](../server/services/ai.serv
 
 **Purpose:** Generate three interviewer-style follow-ups for a parent question.
 
-**Inputs:** `question`, `expectedAnswer`, `topic`, `difficulty`.
+**Inputs:** `question`, `expectedAnswer`, `topic`, `difficulty`, optional `jobDescription`, optional `resumeText` (from the parent interview process when saved).
 
 **Output:** Same array shape as generation (exactly 3 items intended): deeper technical, practical scenario, typical interviewer probe.
 

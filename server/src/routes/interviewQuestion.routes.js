@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
     generateQuestions,
+    parseResume,
     getQuestions,
     updateQuestion,
     generateFollowUps,
@@ -15,6 +16,7 @@ const {
     validateParams,
 } = require('../middleware/validate.middleware');
 const { aiRateLimiter } = require('../middleware/rateLimit.middleware');
+const { handleResumeUpload } = require('../middleware/upload.middleware');
 const {
     generateQuestionsSchema,
     updateQuestionSchema,
@@ -31,6 +33,12 @@ router.post(
     aiRateLimiter,
     validate(generateQuestionsSchema),
     generateQuestions
+);
+
+router.post(
+    '/parse-resume',
+    handleResumeUpload,
+    parseResume
 );
 
 router.post(

@@ -19,6 +19,8 @@ export interface InterviewProcess {
     recruiter?: string;
     jobUrl?: string;
     notes?: string;
+    jobDescription?: string;
+    resumeText?: string;
     appliedDate: string;
     isArchived: boolean;
     createdAt: string;

@@ -5,6 +5,7 @@
     { success: false, message, code, stack? }
 */
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
 
 const errorMiddleware = (err, req, res, next) => {
     let statusCode = err.statusCode || 500;
@@ -40,11 +41,15 @@ const errorMiddleware = (err, req, res, next) => {
         response.stack = err.stack;
     }
 
-    if (process.env.NODE_ENV === 'development') {
-        console.error(err);
-    } else {
-        console.error(`[${code}] ${message}`);
-    }
+    logger.error('http.error', {
+        method: req.method,
+        path: req.originalUrl,
+        statusCode,
+        code,
+        message,
+        userId: req.user?._id?.toString() || null,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
 
     return res.status(statusCode).json(response);
 };

@@ -14,6 +14,7 @@ const {
     buildFollowUpPrompt,
     generateFollowUpsFromAI,
 } = require('../../services/ai.service');
+const { extractResumeText } = require('../utils/extractResumeText');
 
 const DIFFICULTY_RANK = { Easy: 1, Medium: 2, Hard: 3 };
 
@@ -50,6 +51,8 @@ const generateQuestions = asyncHandler(async (req, res) => {
         interviewRoundId,
         numberOfQuestions = 10,
         difficulty = 'Mixed',
+        jobDescription,
+        resumeText,
     } = req.body;
 
     const {
@@ -80,6 +83,12 @@ const generateQuestions = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'User not found');
     }
 
+    // Prefer request body; fall back to previously saved process context
+    const effectiveJobDescription =
+        jobDescription ?? interviewProcess.jobDescription ?? '';
+    const effectiveResumeText =
+        resumeText ?? interviewProcess.resumeText ?? '';
+
     const prompt = buildQuestionPrompt({
         company: interviewProcess.company,
         role: interviewProcess.role,
@@ -88,6 +97,8 @@ const generateQuestions = asyncHandler(async (req, res) => {
         roundType: interviewRound.roundType,
         numberOfQuestions,
         difficulty,
+        jobDescription: effectiveJobDescription || undefined,
+        resumeText: effectiveResumeText || undefined,
     });
 
     const generatedQuestions =
@@ -123,9 +134,38 @@ const generateQuestions = asyncHandler(async (req, res) => {
         questionDocuments
     );
 
+    // Persist context on the process for reuse (follow-ups / later rounds)
+    if (jobDescription !== undefined) {
+        interviewProcess.jobDescription = jobDescription || '';
+    }
+    if (resumeText !== undefined) {
+        interviewProcess.resumeText = resumeText || '';
+    }
+    if (jobDescription !== undefined || resumeText !== undefined) {
+        await interviewProcess.save();
+    }
+
     return res.status(201).json({
         message: 'Interview questions generated successfully',
         questions: savedQuestions.map(toPublicQuestion),
+    });
+});
+
+/**
+ * Parse an uploaded resume (PDF/DOCX) and return plain text.
+ * Does not store the binary file — only returns extracted text for the client to edit.
+ */
+const parseResume = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        throw new ApiError(400, 'Resume file is required');
+    }
+
+    const text = await extractResumeText(req.file);
+
+    return res.status(200).json({
+        message: 'Resume text extracted successfully',
+        text,
+        fileName: req.file.originalname,
     });
 });
 
@@ -272,10 +312,8 @@ const updateQuestion = asyncHandler(async (req, res) => {
 const generateFollowUps = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const { interviewQuestion } = await assertQuestionOwnership(
-        id,
-        req.user._id
-    );
+    const { interviewQuestion, interviewProcess } =
+        await assertQuestionOwnership(id, req.user._id);
 
     if (interviewQuestion.isFollowUp) {
         throw new ApiError(
@@ -301,6 +339,8 @@ const generateFollowUps = asyncHandler(async (req, res) => {
         expectedAnswer: interviewQuestion.expectedAnswer,
         topic: interviewQuestion.topic,
         difficulty: interviewQuestion.difficulty,
+        jobDescription: interviewProcess.jobDescription || undefined,
+        resumeText: interviewProcess.resumeText || undefined,
     });
 
     const generated = await generateFollowUpsFromAI(prompt);
@@ -380,6 +420,7 @@ const getExpectedAnswer = asyncHandler(async (req, res) => {
 
 module.exports = {
     generateQuestions,
+    parseResume,
     getQuestions,
     updateQuestion,
     generateFollowUps,

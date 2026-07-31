@@ -12,7 +12,9 @@ const questionRoutes = require('./routes/interviewQuestion.routes');
 const answerRoutes = require('./routes/interviewAnswer.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const errorMiddleware = require('./middleware/error.middleware');
+const requestLogger = require('./middleware/requestLogger.middleware');
 const ApiError = require('./utils/ApiError');
+const logger = require('./utils/logger');
 
 const app = express();
 
@@ -47,6 +49,7 @@ app.use(express.json({ limit: '1mb' }));
 // cookieParser is a middleware that parses the incoming request cookies in a JSON format without which we won't be able to parse the request cookies
 //it is used to parse the cookies attached to the request
 app.use(cookieParser());
+app.use(requestLogger);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -73,11 +76,11 @@ app.use(errorMiddleware);
 const startServer = async () => {
     await connectDB();
     const server = app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+        logger.info('server.started', { port: PORT, env: process.env.NODE_ENV });
     });
 
     server.on('error', (error) => {
-        console.error('Error:', error);
+        logger.error('server.error', { error: error.message });
     });
 };
 

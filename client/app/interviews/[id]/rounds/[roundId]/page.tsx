@@ -297,10 +297,13 @@ function EditRoundContent({
                 <div className="mb-6">
                     <GenerateQuestionsPanel
                         roundId={roundId}
+                        processId={processId}
                         hasQuestions={
                             !questionsLoading && rootQuestionCount > 0
                         }
                         disabled={readOnly || questionsLoading}
+                        initialJobDescription={process?.jobDescription ?? ""}
+                        initialResumeText={process?.resumeText ?? ""}
                     />
                 </div>
 

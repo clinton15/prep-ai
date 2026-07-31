@@ -28,7 +28,16 @@ const userSchema = new mongoose.Schema({
     },
     avatar: {
         type: String,
-    }
+    },
+    // Hashed one-time token for password reset (plain token never stored)
+    resetPasswordToken: {
+        type: String,
+        default: null,
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null,
+    },
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

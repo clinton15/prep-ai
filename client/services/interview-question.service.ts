@@ -5,6 +5,7 @@ import type {
     GenerateQuestionsPayload,
     InterviewQuestionResponse,
     InterviewQuestionsResponse,
+    ParseResumeResponse,
     QuestionFilters,
     UpdateQuestionPayload,
 } from "@/types/interview-question";
@@ -36,6 +37,19 @@ export const generateQuestions = async (
     data: GenerateQuestionsPayload
 ): Promise<InterviewQuestionsResponse> => {
     const response = await api.post("/questions/generate", data);
+    return response.data;
+};
+
+export const parseResume = async (
+    file: File
+): Promise<ParseResumeResponse> => {
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    const response = await api.post("/questions/parse-resume", formData, {
+        // Override instance JSON default; Axios sets the multipart boundary
+        headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
 };
 

@@ -20,6 +20,7 @@ import {
     toEvaluateAnswerPayload,
     type EvaluateAnswerFormValues,
 } from "@/lib/validations/interview-answer";
+import { toastAiError } from "@/lib/toast-ai-error";
 import type { InterviewAnswer } from "@/types/interview-answer";
 import type { InterviewQuestion } from "@/types/interview-question";
 import type { ApiError } from "@/types/api-error";
@@ -110,10 +111,10 @@ export default function PracticeQuestionCard({
                     onEvaluated?.(data.answer);
                 },
                 onError: (error: ApiError) => {
-                    toast.error(
-                        error.response?.data?.message ??
-                            "Failed to evaluate answer"
-                    );
+                    toastAiError(error, {
+                        fallback: "Failed to evaluate answer",
+                        onRetry: () => onSubmit(values),
+                    });
                 },
             }
         );
@@ -210,10 +211,10 @@ export default function PracticeQuestionCard({
                 );
             },
             onError: (error: ApiError) => {
-                toast.error(
-                    error.response?.data?.message ??
-                        "Failed to generate follow-ups"
-                );
+                toastAiError(error, {
+                    fallback: "Failed to generate follow-ups",
+                    onRetry: () => handleGenerateFollowUps(),
+                });
             },
         });
     }

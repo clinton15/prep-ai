@@ -48,6 +48,19 @@ const interviewProcessSchema = new mongoose.Schema({
         trim: true,
     },
 
+    // Optional context for AI question generation (plain text only)
+    jobDescription: {
+        type: String,
+        trim: true,
+        default: '',
+    },
+
+    resumeText: {
+        type: String,
+        trim: true,
+        default: '',
+    },
+
     appliedDate: {
         type: Date,
         default: Date.now,

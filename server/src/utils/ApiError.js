@@ -29,6 +29,9 @@ class ApiError extends Error {
                 return 'CONFLICT';
             case 429:
                 return 'RATE_LIMITED';
+            case 502:
+            case 503:
+                return 'AI_UNAVAILABLE';
             default:
                 return statusCode >= 500 ? 'INTERNAL_ERROR' : 'VALIDATION_ERROR';
         }

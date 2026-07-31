@@ -35,6 +35,17 @@ export interface DashboardTopicStat {
     averageScore: number;
 }
 
+export interface DashboardTopicProgressPoint {
+    date: string;
+    averageScore: number;
+    count: number;
+}
+
+export interface DashboardTopicProgressSeries {
+    topic: string;
+    points: DashboardTopicProgressPoint[];
+}
+
 export interface DashboardSummary {
     applications: DashboardApplicationsSummary;
     rounds: DashboardRoundsSummary;
@@ -42,6 +53,7 @@ export interface DashboardSummary {
     performance: DashboardPerformanceSummary;
     topTopics: DashboardTopicStat[];
     weakTopics: DashboardTopicStat[];
+    topicProgress?: DashboardTopicProgressSeries[];
 }
 
 export interface DashboardRecentActivityItem {

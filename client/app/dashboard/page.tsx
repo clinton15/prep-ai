@@ -10,6 +10,7 @@ import ApplicationStatusChart from "@/components/dashboard/application-status-ch
 import RoundsOverviewChart from "@/components/dashboard/rounds-overview-chart";
 import TopTopicsChart from "@/components/dashboard/top-topics-chart";
 import WeakTopicsCard from "@/components/dashboard/weak-topics-card";
+import TopicProgressChart from "@/components/dashboard/topic-progress-chart";
 import RecentActivityList from "@/components/dashboard/recent-activity-list";
 import PageHeader from "@/components/shared/page-header";
 import QueryError from "@/components/shared/query-error";
@@ -88,6 +89,10 @@ export default function DashboardPage() {
                     />
                     <WeakTopicsCard
                         topics={summary?.weakTopics}
+                        isLoading={isLoading}
+                    />
+                    <TopicProgressChart
+                        series={summary?.topicProgress}
                         isLoading={isLoading}
                     />
                 </section>
