@@ -152,12 +152,12 @@ export default function GenerateQuestionsPanel({
                 className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs"
                 noValidate
             >
-                <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start">
                     <FormField
                         control={form.control}
                         name="numberOfQuestions"
                         render={({ field }) => (
-                            <FormItem className="min-w-40 flex-1">
+                            <FormItem className="w-full min-w-0">
                                 <FormLabel>Number of questions</FormLabel>
                                 <FormControl>
                                     <Input
@@ -165,6 +165,7 @@ export default function GenerateQuestionsPanel({
                                         min={1}
                                         max={50}
                                         disabled={busy}
+                                        className="w-full"
                                         name={field.name}
                                         ref={field.ref}
                                         onBlur={field.onBlur}
@@ -187,11 +188,12 @@ export default function GenerateQuestionsPanel({
                         control={form.control}
                         name="difficulty"
                         render={({ field }) => (
-                            <FormItem className="min-w-40 flex-1">
+                            <FormItem className="w-full min-w-0">
                                 <FormLabel>Difficulty</FormLabel>
                                 <FormControl>
                                     <Select
                                         disabled={busy}
+                                        className="w-full"
                                         name={field.name}
                                         ref={field.ref}
                                         onBlur={field.onBlur}
@@ -218,7 +220,7 @@ export default function GenerateQuestionsPanel({
                     control={form.control}
                     name="jobDescription"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="w-full">
                             <FormLabel>
                                 Job description{" "}
                                 <span className="font-normal text-muted-foreground">
@@ -228,7 +230,7 @@ export default function GenerateQuestionsPanel({
                             <FormControl>
                                 <Textarea
                                     placeholder="Paste the job description to ground questions in the role requirements…"
-                                    className="min-h-28"
+                                    className="min-h-28 w-full"
                                     disabled={busy}
                                     {...field}
                                 />
@@ -242,136 +244,13 @@ export default function GenerateQuestionsPanel({
                     )}
                 />
 
-                {/* TODO: re-enable when resume upload UI is finished
-                <div className="space-y-2">
-                    <FormLabel>
-                        Resume{" "}
-                        <span className="font-normal text-muted-foreground">
-                            (optional)
-                        </span>
-                    </FormLabel>
-                    <div
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                if (!busy) fileInputRef.current?.click();
-                            }
-                        }}
-                        onDragEnter={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (!busy) setIsDragging(true);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (!busy) setIsDragging(true);
-                        }}
-                        onDragLeave={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            setIsDragging(false);
-                        }}
-                        onDrop={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            setIsDragging(false);
-                            if (busy) return;
-                            handleResumeFile(event.dataTransfer.files?.[0]);
-                        }}
-                        onClick={() => {
-                            if (!busy) fileInputRef.current?.click();
-                        }}
-                        className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-6 text-center transition-colors ${
-                            isDragging
-                                ? "border-foreground bg-muted/40"
-                                : "border-border bg-muted/10 hover:bg-muted/20"
-                        } ${busy ? "pointer-events-none opacity-50" : ""}`}
-                    >
-                        {parseResumeMutation.isPending ? (
-                            <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                        ) : (
-                            <FileUp className="size-5 text-muted-foreground" />
-                        )}
-                        <p className="text-sm text-muted-foreground">
-                            {parseResumeMutation.isPending
-                                ? "Extracting text…"
-                                : "Drop a PDF or DOCX here, or click to browse"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            Max 5MB. File is parsed only — not stored.
-                        </p>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept={ACCEPTED_RESUME_TYPES}
-                            className="sr-only"
-                            disabled={busy}
-                            onChange={(event) => {
-                                handleResumeFile(event.target.files?.[0]);
-                                event.target.value = "";
-                            }}
-                        />
-                    </div>
-                    {uploadedFileName ? (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>Parsed from {uploadedFileName}</span>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-1"
-                                disabled={busy}
-                                onClick={() => {
-                                    setUploadedFileName(null);
-                                    form.setValue("resumeText", "", {
-                                        shouldDirty: true,
-                                    });
-                                }}
-                            >
-                                <X className="size-3.5" />
-                                Clear
-                            </Button>
-                        </div>
-                    ) : null}
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="resumeText"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>
-                                Resume text{" "}
-                                <span className="font-normal text-muted-foreground">
-                                    (editable)
-                                </span>
-                            </FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="Upload a resume above, or paste resume text here…"
-                                    className="min-h-36 font-mono text-xs md:text-xs"
-                                    disabled={busy}
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormDescription>
-                                Fix parsing artifacts before generating.
-                                Scanned/image PDFs won&apos;t extract text.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                */}
+                {/* TODO: re-enable resume upload UI when ready (see git history) */}
 
                 <LoadingButton
                     type="submit"
                     loading={generateMutation.isPending}
                     disabled={busy && !generateMutation.isPending}
-                    className="w-full sm:w-auto"
+                    className="w-full"
                 >
                     Generate questions
                 </LoadingButton>
