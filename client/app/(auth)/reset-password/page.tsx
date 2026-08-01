@@ -1,24 +1,26 @@
 import AuthCard from "@/components/auth/auth-card";
-// import ResetPasswordForm from "@/components/auth/reset-password-form";
+import ResetPasswordForm from "@/components/auth/reset-password-form";
 import Link from "next/link";
 
 interface ResetPasswordPageProps {
     searchParams: Promise<{ token?: string }>;
 }
 
-/** Reset-password UI temporarily disabled — backend exists; re-enable when ready. */
 export default async function ResetPasswordPage({
     searchParams,
 }: ResetPasswordPageProps) {
-    // Keep reading searchParams so the route contract stays valid
-    await searchParams;
+    const params = await searchParams;
+    const token = params.token?.trim() ?? "";
 
     return (
         <AuthCard
             title="Reset your password"
-            description="Password reset is not available in the UI yet."
+            description={
+                token
+                    ? "Choose a new password for your account."
+                    : "This reset link is missing a token. Request a new one from the forgot-password page."
+            }
         >
-            {/* TODO: re-enable when reset-password UI is finished
             {token ? (
                 <ResetPasswordForm token={token} />
             ) : (
@@ -31,10 +33,8 @@ export default async function ResetPasswordPage({
                     </Link>
                 </p>
             )}
-            */}
 
-            <p className="text-center text-sm text-muted-foreground">
-                This flow is temporarily hidden.{" "}
+            <p className="mt-6 text-center text-[0.8125rem] text-muted-foreground">
                 <Link
                     href="/login"
                     className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"

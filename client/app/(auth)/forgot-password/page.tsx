@@ -1,20 +1,17 @@
 import AuthCard from "@/components/auth/auth-card";
-// import ForgotPasswordForm from "@/components/auth/forgot-password-form";
+import ForgotPasswordForm from "@/components/auth/forgot-password-form";
 import Link from "next/link";
 
-/** Forgot-password UI temporarily disabled — backend exists; re-enable when ready. */
 export default function ForgotPasswordPage() {
     return (
         <AuthCard
             title="Forgot your password?"
-            description="Password reset is not available in the UI yet."
+            description="Enter your account email. We'll create a reset link and take you there (no email required for personal use)."
         >
-            {/* TODO: re-enable when forgot-password UI is finished
             <ForgotPasswordForm />
-            */}
 
-            <p className="text-center text-sm text-muted-foreground">
-                This flow is temporarily hidden.{" "}
+            <p className="mt-6 text-center text-[0.8125rem] text-muted-foreground">
+                Remembered it?{" "}
                 <Link
                     href="/login"
                     className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"

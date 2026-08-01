@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +11,7 @@ import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { useForgotPassword } from "@/hooks/use-auth";
 
 import LoadingButton from "@/components/shared/loading-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiError } from "@/types/api-error";
 
@@ -23,8 +26,13 @@ import {
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
+/**
+ * Personal-use flow: no email. API returns resetUrl; we send the user there.
+ */
 export default function ForgotPasswordForm() {
+    const router = useRouter();
     const forgotPasswordMutation = useForgotPassword();
+    const [resetUrl, setResetUrl] = useState<string | null>(null);
 
     const form = useForm<ForgotPasswordFormValues>({
         resolver: zodResolver(forgotPasswordSchema),
@@ -38,15 +46,21 @@ export default function ForgotPasswordForm() {
             onSuccess: (data) => {
                 toast.success(data.message);
 
-                // Dev convenience: surface the reset link when the API returns it
                 if (data.resetUrl) {
-                    toast.message("Dev reset link", {
-                        description: data.resetUrl,
-                        duration: 15000,
-                    });
+                    setResetUrl(data.resetUrl);
+                    // Prefer relative path when CLIENT_URL matches this app
+                    try {
+                        const url = new URL(data.resetUrl);
+                        router.push(`${url.pathname}${url.search}`);
+                        return;
+                    } catch {
+                        router.push(data.resetUrl);
+                        return;
+                    }
                 }
 
                 form.reset();
+                setResetUrl(null);
             },
             onError: (error: ApiError) => {
                 toast.error(
@@ -88,8 +102,22 @@ export default function ForgotPasswordForm() {
                     className="w-full"
                     loading={forgotPasswordMutation.isPending}
                 >
-                    Send reset link
+                    Get reset link
                 </LoadingButton>
+
+                {resetUrl ? (
+                    <p className="text-center text-sm text-muted-foreground">
+                        If you weren’t redirected,{" "}
+                        <Button
+                            asChild
+                            variant="link"
+                            className="h-auto p-0 text-sm"
+                        >
+                            <a href={resetUrl}>open the reset page</a>
+                        </Button>
+                        .
+                    </p>
+                ) : null}
             </form>
         </Form>
     );

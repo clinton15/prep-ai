@@ -8,8 +8,8 @@ const { getAuthCookieOptions } = require('../utils/authCookie');
 const logger = require('../utils/logger');
 
 const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-const GENERIC_FORGOT_MESSAGE =
-    'If an account exists for that email, a password reset link has been generated.';
+const RESET_READY_MESSAGE =
+    'Password reset link ready. It expires in 1 hour.';
 
 function hashResetToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
@@ -155,22 +155,21 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 /*
-    Generates a short-lived reset token, stores its hash on the user,
-    and logs the reset link (no email provider yet). In non-production,
-    also returns resetUrl in the response for convenient local testing.
+    Personal-use forgot password (no email):
+    Creates a short-lived reset token, stores its hash, and returns
+    the reset URL in the response so the client can open it directly.
 */
 const forgotPassword = asyncHandler(async (req, res) => {
     const email = req.body.email.trim().toLowerCase();
     const user = await User.findOne({ email });
 
-    // Always return the same message to avoid email enumeration
     if (!user) {
-        logger.info('auth.forgot_password', {
+        logger.warn('auth.forgot_password', {
             email,
-            success: true,
-            userFound: false,
+            success: false,
+            reason: 'email_not_found',
         });
-        return res.status(200).json({ message: GENERIC_FORGOT_MESSAGE });
+        throw new ApiError(404, 'No account found with that email');
     }
 
     const rawToken = crypto.randomBytes(32).toString('hex');
@@ -190,14 +189,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
         resetUrl: resetUrl || `(token only) ${rawToken}`,
     });
 
-    const payload = { message: GENERIC_FORGOT_MESSAGE };
-
-    if (process.env.NODE_ENV !== 'production') {
-        payload.resetUrl = resetUrl;
-        payload.resetToken = rawToken;
-    }
-
-    return res.status(200).json(payload);
+    return res.status(200).json({
+        message: RESET_READY_MESSAGE,
+        resetUrl,
+        resetToken: rawToken,
+    });
 });
 
 const resetPassword = asyncHandler(async (req, res) => {

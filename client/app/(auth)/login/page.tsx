@@ -11,7 +11,6 @@ export default function LoginPage() {
         >
             <LoginForm />
 
-            {/* TODO: re-enable when forgot/reset-password UI is finished
             <p className="mt-3 text-center text-[0.8125rem] text-muted-foreground">
                 <Link
                     href="/forgot-password"
@@ -20,7 +19,6 @@ export default function LoginPage() {
                     Forgot password?
                 </Link>
             </p>
-            */}
 
             <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
